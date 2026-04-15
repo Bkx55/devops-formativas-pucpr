@@ -1,0 +1,15 @@
+name: CD
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  deliver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t devops-formativas:latest .
+      - name: Save delivery log
+        run: echo "Entrega continua executada com sucesso no branch main."
