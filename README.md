@@ -15,6 +15,11 @@ python app.py
 pytest -q
 ```
 
+## Alertas (GitHub Actions)
+
+Configure o secret `ALERT_WEBHOOK_URL` no repositorio para enviar alertas
+para Discord, Slack, Teams ou Telegram via webhook.
+
 ## Docker
 
 ```bash
