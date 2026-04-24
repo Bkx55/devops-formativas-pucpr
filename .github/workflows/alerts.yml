@@ -10,19 +10,21 @@ jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-      - name: Build alert message
-        id: msg
+      - name: Send Discord webhook alert
+        env:
+          WEBHOOK_URL: ${{ secrets.ALERT_WEBHOOK_URL }}
         run: |
-          echo "text=Repositorio: ${{ github.repository }} | Evento: ${{ github.event_name }} | Branch: ${{ github.ref_name }} | Status: workflow executado" >> "$GITHUB_OUTPUT"
+          set -euo pipefail
 
-      - name: Send webhook alert
-        if: ${{ secrets.ALERT_WEBHOOK_URL != '' }}
-        run: |
-          curl -X POST \
-          -H "Content-Type: application/json" \
-          -d "{\"content\":\"${{ steps.msg.outputs.text }}\"}" \
-          "${{ secrets.ALERT_WEBHOOK_URL }}"
+          if [ -z "${WEBHOOK_URL:-}" ]; then
+            echo "Secret ALERT_WEBHOOK_URL nao configurada. Configure em Settings -> Secrets and variables -> Actions."
+            exit 0
+          fi
 
-      - name: Skip when webhook is missing
-        if: ${{ secrets.ALERT_WEBHOOK_URL == '' }}
-        run: echo "Secret ALERT_WEBHOOK_URL nao configurada. Configure para enviar alertas."
+          export MESSAGE="Repositorio: ${{ github.repository }} | Evento: ${{ github.event_name }} | Branch: ${{ github.ref_name }} | Workflow: ${{ github.workflow }} | Run: ${{ github.run_id }}"
+          PAYLOAD="$(python -c 'import json, os; print(json.dumps({"content": os.environ["MESSAGE"]}))')"
+
+          curl --fail-with-body -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$WEBHOOK_URL"
