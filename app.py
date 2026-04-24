@@ -1,11 +1,23 @@
 from flask import Flask, jsonify
 
-app = Flask(__name__)
+APP_MESSAGE = "Projeto DevOps rodando com CI/CD + Docker!"
 
 
-@app.get("/")
-def home():
-    return jsonify({"message": "Projeto DevOps rodando com CI/CD + Docker!"})
+def create_app():
+    app = Flask(__name__)
+
+    @app.get("/")
+    def home():
+        return jsonify({"message": APP_MESSAGE, "status": "ok"})
+
+    @app.get("/health")
+    def health():
+        return jsonify({"healthy": True})
+
+    return app
+
+
+app = create_app()
 
 
 if __name__ == "__main__":
